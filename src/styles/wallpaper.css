@@ -10,6 +10,23 @@
     background-color: #fff;
     margin-left: 21px;
 }
+.Logo {
+    width: 199px;
+    height: 110px;
+    margin: auto;
+    border: solid 1px #707070;
+    background-color: #fff;
+    border-radius: 100%;
+    font-family: Poppins;
+    font-size: 70px;
+    font-weight: 600;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 99px;
+    letter-spacing: normal;
+    color: #eb2929;
+}
+
 
 .suggestionItem {
     display: flex;
@@ -69,3 +86,4 @@
     position: absolute;
     right: 15px;
 }
+

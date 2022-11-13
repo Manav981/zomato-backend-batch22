@@ -72,7 +72,7 @@ class Wallpaper extends Component {
                                     </div>
                                 </div>
                                 <div className="orderButton text-danger">
-                                    Order Now >
+                                    Order Now 
                                 </div>
                             </li>
                         )
@@ -93,7 +93,7 @@ class Wallpaper extends Component {
                 <div className="topSection">
                     <img src={require('../Assets/home.png').default} alt="Not Found" className="homeImage"/>
                     <div className="branding">
-                        <div className="logo">e!</div>
+                        <div className="Logo">eat!</div>
                         <div className="headerText">Find the best restaurants, cafés, and bars</div>
                     </div>
                     <div className="searchOptions">
@@ -104,6 +104,7 @@ class Wallpaper extends Component {
                                     locationData.map((item, index) => {
                                         return (
                                             <option key={index} value={item.location_id}>{item.name}, {item.city}</option>
+                                            // <option key={index} value="chennai">"sambar", "kelambakkam"</option>
                                         )
                                     })
                                 }

@@ -84,6 +84,38 @@
     color: #192f60;
 }
 
+.addButton {
+    background-color: #ce0505;
+    color: white;
+    font-weight: 400;
+}
+
+.addButton:hover{
+    background-color: #d34848;
+    color: white;
+    font-weight: 400;
+}
+
+.removeButton{
+    background-color: #ce0505;
+    color: white;
+    font-weight: 400;
+}
+
+.removeButton:hover{
+    background-color: #d34848;
+    color: white;
+    font-weight: 400;
+}
+
+.date{
+    border-radius: 5px;
+    max-height: 30px;
+    max-width: 200px;
+    box-sizing: border-box;
+    font-size: 20px;
+}
+
 .menu {
     
 }

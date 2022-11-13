@@ -4,11 +4,14 @@ import axios from 'axios';
 import { withRouter } from 'react-router-dom';
 import '../styles/filter.css'
 const API_URL = require('../constants').API_URL;
+let restaurantList=require('./Restaurant.json');
+// console.log(restaurantList);
 
 class Filter extends Component {
 
     constructor() {
         super();
+        let restaurantList=require('./Restaurant.json');
         this.state = {
             mealName: '',
             mealType: 0,
@@ -17,13 +20,13 @@ class Filter extends Component {
             locationsInCity: [],
             selectedLocation: '',
             pageNo: 1,
-            restaurantList: [],
+            restaurantList: restaurantList,
             totalResults: 0,
             noOfPages: 0,
             cuisines: [],
-            lCost: undefined,
-            hCost: undefined,
-            sortOrder: 1
+            lCost: 0,
+            hCost: 0,
+            sortOrder: 2
         }
     }
 
@@ -51,6 +54,17 @@ class Filter extends Component {
                 setTimeout(() => {
                     this.filterRestaurants();
                 }, 0);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        axios.get(`${API_URL}/getAllRestaurantsByMealType`)
+            .then(resp => {
+                console.log(resp);
+                const allRestaurants = resp.data.restaurants;
+                this.setState({
+                    restaurantList: allRestaurants
+                });
             })
             .catch(err => {
                 console.log(err);
@@ -88,22 +102,89 @@ class Filter extends Component {
             req.sort = sortOrder;
         }
 
-        axios({
-            method: 'POST',
-            url: `${API_URL}/filter`,
-            headers: { 'Content-Type': 'application/json' },
-            data: req
-        }).then(result => {
-            const { restaurants, totalResultsCount, pageNo, pageSize } = result.data;
-            this.setState({
-                pageNo: pageNo,
-                restaurantList: restaurants,
-                totalResults: totalResultsCount,
-                noOfPages: Math.ceil((totalResultsCount/pageSize)),
+        // let newlist=restaurantList;
+        // let flag=0;
+        // restaurantList.map(item =>{
+        //     item.cuisine.map(c => {
+        //         cuisines.map(cu =>{
+        //             if(c.name ===cu)
+        //             {
+        //                 flag =1;
+        //             newlist.push(item);
+        //             }
+        //         })
+        //     })
+        //     // console.log(item);
+        // })
+        // if(flag==0)
+        // this.setState({restaurantList:restaurantList});
+        // else{
+        //     newlist=newlist.slice(4);
+        //     console.log(newlist);
+        //     this.setState({restaurantList:newlist})
+        // }
+
+        //Cost 
+        let costlist=[];
+        if(lCost>=0 && hCost>=0){
+
+        restaurantList.map(r => {
+            if(r.min_price>lCost && r.min_price<hCost)
+            costlist.push(r);
+        })
+        console.log(costlist);
+        if(costlist.length!=0)
+        this.setState({restaurantList:costlist});
+        else
+        this.setState({restaurantList:restaurantList});
+    }
+        // console.log(restaurantList);
+        
+        // Sorting
+        if(sortOrder==1){
+            let {restaurantList}=this.state;
+            restaurantList.sort((a,b) => {
+                return a.min_price - b.min_price;
+            });
+            this.setState({restaurantList:restaurantList});
+        }
+        if(sortOrder==-1){
+            let {restaurantList}=this.state;
+            restaurantList.sort((a,b) => {
+                return b.min_price - a.min_price;
+            });
+            this.setState({restaurantList:restaurantList});
+        }
+        
+        if(selectedLocation==null)
+        this.setState({restaurantList:null});
+        if(selectedLocation.length>0){
+            let locationList=[];
+            let {selectedLocation}= this.state;
+            restaurantList.map(a =>{
+                if(a.location_id==selectedLocation)
+                locationList.push(a);
             })
-        }).catch(err => {
-            console.log(err);
-        });
+            this.setState({restaurantList:locationList});
+        }
+        // console.log(newlist);
+
+        // axios({
+        //     method: 'POST',
+        //     url: `${API_URL}/filter`,
+        //     headers: { 'Content-Type': 'application/json' },
+        //     data: req
+        // }).then(result => {
+        //     const { restaurants, totalResultsCount, pageNo, pageSize } = result.data;
+        //     this.setState({
+        //         pageNo: pageNo,
+        //         restaurantList: restaurants,
+        //         totalResults: totalResultsCount,
+        //         noOfPages: Math.ceil((totalResultsCount/pageSize)),
+        //     })
+        // }).catch(err => {
+        //     console.log(err);
+        // });
     }
 
     handleLocationChange = (e) => {
@@ -132,11 +213,13 @@ class Filter extends Component {
         }, 0);
     }
 
-    handleCostChange = (e, lCost, hCost) => {
+    handleCostChange = (e, lcost, hcost) => {
         this.setState({
-            lCost: lCost,
-            hCost: hCost
+            lCost: lcost,
+            hCost: hcost
         });
+        const {lCost,hCost} = this.state;
+        console.log(lcost,hcost);
         setTimeout(() => {
             this.filterRestaurants();
         }, 0);
@@ -162,7 +245,7 @@ class Filter extends Component {
     }
 
     goToRestaurant = (rest) => {
-        const url = `/details?id=${rest._id}`;
+        const url = `/details?id=${rest._id.$oid}`;
         this.props.history.push(url);
     }
 
@@ -197,9 +280,9 @@ class Filter extends Component {
                                         })
                                     }
                                 </select>
-                                <div className="fs-subheading my-2">Cuisine</div>
-                                <div className="mb-4 sort-options">
-                                    <div className="my-2">
+                                {/* <div className="fs-subheading my-2">Cuisine</div> */}
+                                {/* <div className="mb-4 sort-options"> */}
+                                    {/* <div className="my-2">
                                         <input type="checkbox" onChange={(e) => this.handleCuisineChange(e, 'North Indian')} /> North Indian
                                     </div>
                                     <div className="my-2">
@@ -213,8 +296,8 @@ class Filter extends Component {
                                     </div>
                                     <div className="my-2">
                                         <input type="checkbox" onChange={(e) => this.handleCuisineChange(e, 'Street Food')} /> Street Food
-                                    </div>
-                                </div>
+                                    </div> */}
+                                {/* </div> */}
                                 <div className="fs-subheading my-2">Cost For Two</div>
                                 <div className="mb-4 sort-options">
                                     <div className="my-2">
@@ -250,11 +333,12 @@ class Filter extends Component {
                                     restaurantList.length > 0
                                     ?
                                     restaurantList.map((item, index) => {
+                                        // console.log(item);
                                         return (
                                             <div key={index} className="row result-box" onClick={() => this.goToRestaurant(item)}>
                                                 <div className="row">
                                                     <div className="col-4 col-md-5 col-lg-3 col-xl-2">
-                                                        <img src={require('../Assets/breakfast.png').default} className="box-image" alt="img"/>
+                                                        <img src={require(`../${item.image}`).default} className="box-image" alt="img"/>
                                                     </div>
                                                     <div className="col-8 col-md-7 col-lg-9 col-xl-10">
                                                         <div className="box-heading text-truncate">{item.name}</div>

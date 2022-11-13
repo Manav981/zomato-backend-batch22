@@ -261,17 +261,7 @@ class Header extends Component {
                                 <input type="button" className="btn btn-primary m-2" onClick={this.loginHandler} value="Login" />
                                 <button className="btn" onClick={this.cancelLoginHandler}>Cancel</button>
                             </div>
-                            <div className="mt-4">
-                                <FacebookProvider appId="XXXXXXXX">
-                                    <LoginButton
-                                    scope="email"
-                                    onCompleted={this.handleFacebookResponse}
-                                    onError={this.handleFacebookError}
-                                    >
-                                    <span>Login via Facebook</span>
-                                    </LoginButton>
-                                </FacebookProvider>
-                                <br/>
+                            <div className="mt-4 text-center fs-5">
                                 <GoogleLogin 
                                     clientId="828033579352-qh5i9riaidmqv122tscmn5mej39hftdp.apps.googleusercontent.com"
                                     buttonText="Continue with google"
@@ -304,16 +294,6 @@ class Header extends Component {
                                 <button className="btn" onClick={this.cancelSignUpHandler}>Cancel</button>
                             </div>
                             <div className="mt-4 text-center fs-5">
-                                <FacebookProvider appId="606912070415312">
-                                    <LoginButton
-                                    scope="email"
-                                    onCompleted={this.handleFacebookResponse}
-                                    onError={this.handleFacebookError}
-                                    >
-                                    <span>Login via Facebook</span>
-                                    </LoginButton>
-                                </FacebookProvider>
-                                <br/>
                                 <GoogleLogin 
                                     clientId="828033579352-qh5i9riaidmqv122tscmn5mej39hftdp.apps.googleusercontent.com"
                                     buttonText="Continue with google"

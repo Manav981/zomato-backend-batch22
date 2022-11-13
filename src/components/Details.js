@@ -28,8 +28,10 @@ Modal.setAppElement('#root')
 export default class Details extends Component {
 
     constructor() {
+        let mapState=new Map();
         super();
         this.state = {
+            mapState:null,
             restaurant: null,
             menu: null,
             isMenuOpen: false,
@@ -44,6 +46,7 @@ export default class Details extends Component {
         // get the details of the restaurant
         axios.get(`${API_URL}/getRestaurantById/${id}`)
             .then(resp => {
+                // console.log(JSON.stringify(resp.data));
                 this.setState({
                     restaurant: resp.data.restaurant
                 })
@@ -77,11 +80,57 @@ export default class Details extends Component {
         })
     }
 
+    
     addItemHandler = (item) => {
+        const mapState=this.state;
+        // console.log(mapState);
         const { totalPrice } = this.state;
+        if(mapState[item.itemName]>0)
+        {
+            mapState[item.itemName]=mapState[item.itemName]+1;
+            // mapState.set(item.itemName,mapState.get(item.itemName)+1);
+            this.setState({
+                setmapState:mapState
+            })
+        }
+        else
+        {
+            mapState[item.itemName]=1;
+            // mapState.set(item.itemName,1);
+            this.setState({
+                mapState:mapState
+            })
+        }
         this.setState({
             totalPrice: totalPrice + item.itemPrice
         })
+    }
+
+    removeItemHandler = (item) => {
+        const { totalPrice } = this.state;
+        const mapState=this.state;
+        if(mapState[item.itemName]>0)
+        {
+            mapState[item.itemName]=mapState[item.itemName]-1;
+            if(mapState[item.itemName]<0)
+            mapState[item.itemName]=0;
+            this.setState({
+                setmapState:mapState
+            })
+        }
+        if(totalPrice>0)
+        this.setState({
+            totalPrice: totalPrice - item.itemPrice
+        })
+        else
+        this.setState({
+            totalPrice:0
+        })
+    }
+
+    getqty=(item)=>{
+        const mapState=this.state;
+        return mapState[item.itemName]>0?mapState[item.itemName]:0
     }
 
     isDate = (val) => {
@@ -111,7 +160,7 @@ export default class Details extends Component {
             input.setAttribute('name', key);
             input.setAttribute('value', this.stringifyValue(params[key]));
             form.appendChild(input);
-        })  
+        })
         return form;
     }
 
@@ -139,12 +188,12 @@ export default class Details extends Component {
             },
             body: JSON.stringify(data)
         })
-        .then(resp => {
-            return resp.json();
-        })
-        .catch(err => {
-            console.log(err);
-        });
+            .then(resp => {
+                return resp.json();
+            })
+            .catch(err => {
+                console.log(err);
+            });
     }
 
     paymentHandler = () => {
@@ -172,110 +221,212 @@ export default class Details extends Component {
     }
 
     render() {
+        // let map=new Map();
         const { restaurant, menu, isMenuOpen, totalPrice } = this.state;
         return (
             <>
+            
                 <div className="container details">
                     {
                         restaurant
-                        ?
-                        <>
-                            <div className="images">
-                                <Carousel showThumbs={false}>
-                                    {
-                                        restaurant.thumb.map((item, index) => {
-                                            return (
-                                                <div>
-                                                    <img key={index} src={require(`../${item}`).default} alt="img"/>
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                </Carousel>
-                            </div>
-                            <div className="restName my-3">
-                                { restaurant.name }
-                                <button className="btn btn-danger float-end mt-4" onClick={this.openMenu}>Place Online Order</button>
-                            </div>
-                            <div className="myTabs mb-5">
-                                <Tabs>
-                                    <TabList>
-                                        <Tab>Overview</Tab>
-                                        <Tab>Contact</Tab>
-                                    </TabList>
-                                    <TabPanel>
-                                        <div className="about my-5">About this place</div>
-                                        <div className="cuisine">Cuisine</div>
-                                        <div className="cuisines">
-                                            {
-                                                restaurant.cuisine.map((item, index) => {
-                                                    return <span key={index}>{ item.name },</span>
-                                                })
-                                            }
-                                        </div>
-                                        <div className="cuisine mt-3">Average Cost</div>
-                                        <div className="cuisines">₹{ restaurant.min_price } for two people (approx.)</div>
-                                    </TabPanel>
-                                    <TabPanel>
-                                        <div className="cuisine my-5">Phone Number
-                                            <div className="text-danger">{ restaurant.contact_number }</div>
-                                        </div>
-                                        <div className="cuisine mt-4">{ restaurant.name }</div>
-                                        <div className="text-muted mt-2">
-                                            { restaurant.locality } 
-                                            <br/>
-                                            { restaurant.city }
-                                        </div>
-                                    </TabPanel>
-                                </Tabs>
-                            </div>
-                            <Modal isOpen={isMenuOpen} style={menuStyle}>
-                                <h2>
-                                    Menu
-                                    <button onClick={this.closeMenu} className="btn btn-outline-danger float-end">X</button>
-                                </h2>
-                                <h5>{ restaurant.name }</h5>
-                                <ul className="menu">
-                                    {
-                                        menu
-                                        ?
-                                        menu.map((item, index) => {
-                                            return (
-                                                <li key={index}>
-                                                    <div className="row no-gutters menuItem my-3">
-                                                        <div className="col-10">
-                                                            <div className="row no-gutters">
-                                                                <div className="cuisines col-10">{ item.itemName }</div>
-                                                                <div className="cuisines col-2">&#8377; { item.itemPrice }</div>
-                                                            </div>
-                                                            {
-                                                                item.isVeg
-                                                                ?
-                                                                <div className="text-success fs-6">Veg</div>
-                                                                :
-                                                                <div className="text-danger fs-6">Non-Veg</div>
-                                                            }
-                                                            <div className="cuisines">{ item.itemDescription }</div>
-                                                        </div>
-                                                        <div className="col-2">
-                                                            <button className="btn btn-light addButton" onClick={() => this.addItemHandler(item)}>Add</button>
-                                                        </div>
+                            ?
+                            <>
+                                <div className="images">
+                                    <Carousel showThumbs={false}>
+                                        {
+                                            restaurant.thumb.map((item, index) => {
+                                                return (
+                                                    <div>
+                                                        <img key={index} src={require(`../${item}`).default} alt="img" />
+                                                        {/* <img key={index} src={`../${item}`} alt="img" /> */}
                                                     </div>
-                                                </li>
-                                            )
-                                        })
-                                        :
-                                        null
-                                    }
-                                </ul>
-                                <div className="mt-3 restName fs-4">
-                                    Subtotal <span className="m-4">&#8377; { totalPrice }</span>
-                                    <button className="btn btn-danger float-end" onClick={() => this.paymentHandler()}>Pay Now</button>
+                                                )
+                                            })
+                                        }
+                                    </Carousel>
                                 </div>
-                            </Modal>
-                        </>
-                        :
-                        <div>Loading....</div>
+                                <div className="restName my-3">
+                                    {restaurant.name}
+                                    <button className="btn btn-danger float-end mt-4" onClick={this.openMenu}>Place Online Order</button>
+                                </div>
+                                <div className="myTabs mb-5">
+                                    <Tabs>
+                                        <TabList>
+                                            <Tab>Overview</Tab>
+                                            <Tab>Contact</Tab>
+                                            <Tab>Menu</Tab>
+                                            <Tab>Pre-Order</Tab>
+                                            {/* <Tab>Bulk Pre-Ordering</Tab> */}
+                                        </TabList>
+                                        <TabPanel>
+                                            <div className="about my-5">About this place</div>
+                                            {/* {Description:/* <div>{restaurant}</div> */}
+                                            <div className="cuisine">Specialty</div>
+                                            <div className="cuisines">
+                                                {
+                                                 restaurant.specialty
+                                                }
+                                            </div>
+                                            <br></br>
+
+                                            <div className="cuisine">Cuisine</div>
+
+
+                                            <div className="cuisines">
+                                                {
+                                                    restaurant.cuisine.map((item, index) => {
+                                                        return <span key={index}>{item.name},</span>
+                                                    })
+                                                }
+                                            </div>
+                                            <div className="cuisine mt-3">Average Cost</div>
+                                            <div className="cuisines">₹{restaurant.min_price} for two people (approx.)</div>
+                                        </TabPanel>
+                                        <TabPanel>
+                                            <div className="cuisine my-5">Phone Number
+                                                <div className="text-danger">{restaurant.contact_number}</div>
+                                            </div>
+                                            <div className="cuisine mt-4">{restaurant.name}</div>
+                                            <div className="text-muted mt-2">
+                                                {restaurant.locality}
+                                                <br />
+                                                {restaurant.city}
+                                            </div>
+                                        </TabPanel>
+                                        <TabPanel>
+                                            <ul className="menu">
+                                                {
+                                                    menu
+                                                        ?
+                                                        menu.map((item, index) => {
+                                                            return (
+                                                                <li key={index}>
+                                                                    <div className="row no-gutters menuItem my-3">
+                                                                        <div className="col-10">
+                                                                            <div className="row no-gutters">
+                                                                                <div className="cuisines col-10">{item.itemName} x {this.getqty(item)}</div>
+                                                                                <div className="cuisines col-2">&#8377; {item.itemPrice}</div>
+                                                                            </div>
+                                                                            {
+                                                                                item.isVeg
+                                                                                    ?
+                                                                                    <div className="text-success fs-6">Veg</div>
+                                                                                    :
+                                                                                    <div className="text-danger fs-6">Non-Veg</div>
+                                                                            }
+                                                                            <div className="cuisines">{item.itemDescription}</div>
+                                                                        </div>
+                                                                        <div className="col-1">
+                                                                            <button className="btn btn-light addButton" onClick={() => this.addItemHandler(item)}>Add</button>
+                                                                        </div>
+                                                                        <div className="col-1">
+                                                                            <button className="btn btn-light removeButton" onClick={() => this.removeItemHandler(item)}>Remove</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </li>
+                                                            )
+                                                        })
+                                                        :
+                                                        null
+                                                }
+                                            </ul>
+                                            <div className="mt-3 restName fs-4">
+                                                Subtotal <span className="m-4">&#8377; {totalPrice>0? totalPrice>2000?totalPrice*0.9:totalPrice:0}</span>
+                                                <button className="btn btn-danger float-end" onClick={() => this.paymentHandler()}>Pay Now</button>
+                                            </div>
+                                        </TabPanel>
+                                        <TabPanel>
+                                        <ul className="menu">
+                                                {
+                                                    menu
+                                                        ?
+                                                        menu.map((item, index) => {
+                                                            return (
+                                                                <li key={index}>
+                                                                    <div className="row no-gutters menuItem my-3">
+                                                                        <div className="col-10">
+                                                                            <div className="row no-gutters">
+                                                                                <div className="cuisines col-10">{item.itemName}</div>
+                                                                                <div className="cuisines col-2">&#8377; {item.itemPrice}</div>
+                                                                            </div>
+                                                                            {
+                                                                                item.isVeg
+                                                                                    ?
+                                                                                    <div className="text-success fs-6">Veg</div>
+                                                                                    :
+                                                                                    <div className="text-danger fs-6">Non-Veg</div>
+                                                                            }
+                                                                            <div className="cuisines">{item.itemDescription}</div>
+                                                                        </div>
+                                                                        <div className="col-1">
+                                                                            <button className="btn btn-light addButton" onClick={() => this.addItemHandler(item)}>Add</button>
+                                                                        </div>
+                                                                        <div className="col-1">
+                                                                            <button className="btn btn-light removeButton" onClick={() => this.removeItemHandler(item)}>Remove</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </li>
+                                                            )
+                                                        })
+                                                        :
+                                                        null
+                                                }
+                                            </ul>
+                                            <div className="mt-3 restName fs-4">
+                                                Subtotal <span className="m-4">&#8377; {totalPrice>2000?totalPrice*0.9:totalPrice}</span>
+                                                Order Date <input type="date" className='date'></input>
+                                                <button className="btn btn-danger float-end" onClick={() => this.paymentHandler()}>Pay Now</button>
+                                            </div>
+                                        </TabPanel>
+                                    </Tabs>
+                                </div>
+                                <Modal isOpen={isMenuOpen} style={menuStyle}>
+                                    <h2>
+                                        Menu
+                                        <button onClick={this.closeMenu} className="btn btn-outline-danger float-end">X</button>
+                                    </h2>
+                                    <h5>{restaurant.name}</h5>
+                                    <ul className="menu">
+                                        {
+                                            menu
+                                                ?
+                                                menu.map((item, index) => {
+                                                    return (
+                                                        <li key={index}>
+                                                            <div className="row no-gutters menuItem my-3">
+                                                                <div className="col-10">
+                                                                    <div className="row no-gutters">
+                                                                        <div className="cuisines col-10">{item.itemName}</div>
+                                                                        <div className="cuisines col-2">&#8377; {item.itemPrice}</div>
+                                                                    </div>
+                                                                    {
+                                                                        item.isVeg
+                                                                            ?
+                                                                            <div className="text-success fs-6">Veg</div>
+                                                                            :
+                                                                            <div className="text-danger fs-6">Non-Veg</div>
+                                                                    }
+                                                                    <div className="cuisines">{item.itemDescription}</div>
+                                                                </div>
+                                                                <div className="col-2">
+                                                                    <button className="btn btn-light addButton" onClick={() => this.addItemHandler(item)}>Add</button>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    )
+                                                })
+                                                :
+                                                null
+                                        }
+                                    </ul>
+                                    <div className="mt-3 restName fs-4">
+                                        Subtotal <span className="m-4">&#8377; {totalPrice}</span>
+                                        <button className="btn btn-danger float-end" onClick={() => this.paymentHandler()}>Pay Now</button>
+                                    </div>
+                                </Modal>
+                            </>
+                            :
+                            <div>Loading....</div>
                     }
                 </div>
             </>
